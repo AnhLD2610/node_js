@@ -148,6 +148,8 @@ class Seq2Seq(nn.Module):
             final_prob_code = final_prob_code.transpose(0, 1) # [batch_size, tgt_len, vocab_size]
             
             final_prob =  final_prob_des + final_prob_code
+            final_prob = F.softmax(final_prob, dim=2) # [tgt_len, batch_size, vocab_size]
+
             preds = final_prob.argmax(2) # [batch_size, max_tgt_len]
             # Shift so that tokens < n predict n
             active_loss = target_mask[..., 1:].ne(0).reshape(-1) == 1 # Skip the first token
@@ -205,6 +207,8 @@ class Seq2Seq(nn.Module):
                     
                     
                     final_prob = torch.add(final_prob_des, final_prob_code)
+                    final_prob = F.softmax(final_prob, dim=2) # [tgt_len, batch_size, vocab_size]
+
                     out = torch.log(final_prob).data # [beam_size, vocab_size]
                     beam.advance(out)
                     input_ids.data.copy_(input_ids.data.index_select(0, beam.getCurrentOrigin())) # [beam_size, tgt_len]
